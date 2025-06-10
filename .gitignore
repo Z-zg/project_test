@@ -1,0 +1,20 @@
+# General
+.DS_Store
+.env
+
+# Rust
+target/
+Cargo.lock # For sub-projects, if using workspace, manage at root
+
+# Node.js / Frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Database
+backend/sqlite.db
+
+# IDE specific
+.vscode/
+.idea/ 

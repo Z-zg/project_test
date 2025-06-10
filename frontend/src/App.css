@@ -1,0 +1,158 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Auth Page Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #e0e7ee; /* A soft, light background */
+  font-family: 'Poppins', sans-serif;
+  padding: 20px; /* Add some padding for smaller screens */
+}
+
+.auth-card {
+  background-color: #ffffff;
+  padding: 45px 35px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.auth-card:hover {
+  transform: translateY(-5px); /* Subtle lift on hover */
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+.auth-card h2 {
+  margin-bottom: 35px;
+  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.input-group {
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 10px;
+  color: #555;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.input-group input {
+  width: calc(100% - 24px);
+  padding: 14px 12px;
+  border: 1px solid #c9d6df;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.input-group input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
+.auth-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 19px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  margin-top: 20px;
+}
+
+.auth-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.toggle-link {
+  margin-top: 25px;
+  font-size: 15px;
+  color: #777;
+}
+
+.toggle-link span {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.toggle-link span:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.auth-message {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #dc3545; /* Default for errors */
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.auth-message.success {
+  color: #28a745;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}

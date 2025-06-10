@@ -1,0 +1,5 @@
+[server]
+port = 3000
+
+[database]
+database_url = "sqlite://sqlite.db" 
