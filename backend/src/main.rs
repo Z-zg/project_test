@@ -1,69 +1,86 @@
-use axum::{routing::{get, post}, Router};
-use sqlx::{sqlite::SqlitePoolOptions};
-use std::net::SocketAddr;
-use config::{Config, ConfigError, File};
-use serde::Deserialize;
-use tower_http::cors::{CorsLayer, Any};
+use axum::{extract::{State, FromRef}, routing::{get, post}, Router};
+use tower_http::cors::{Any, CorsLayer};
+use std::{net::SocketAddr, sync::Arc};
+use sqlx::migrate;
+use tokio::net::TcpListener;
 
-mod handlers;
-mod models;
+pub mod handlers;
+pub mod models;
+pub mod services;
+mod config;
+mod db;
 
-#[derive(Debug, Deserialize, Clone)]
-struct Database {
-    database_url: String,
+#[derive(Clone)]
+pub struct AppState {
+    pub db: sqlx::SqlitePool,
+    pub config: Arc<config::AppConfig>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-struct Server {
-    port: u16,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct AppConfig {
-    server: Server,
-    database: Database,
-}
-
-impl AppConfig {
-    fn from_env() -> Result<Self, ConfigError> {
-        let s = Config::builder()
-            .add_source(File::with_name("Config.toml"))
-            .build()?;
-        s.try_deserialize()
+impl FromRef<AppState> for sqlx::SqlitePool {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.db.clone()
     }
 }
 
+impl FromRef<AppState> for Arc<config::AppConfig> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.config.clone()
+    }
+}
+
+async fn root() -> &'static str {
+    "Hello, world!"
+}
+
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
     // Load configuration
-    let config = AppConfig::from_env()?;
+    let config = match config::AppConfig::from_env() {
+        Ok(config) => Arc::new(config),
+        Err(e) => {
+            eprintln!("Error loading configuration: {}", e);
+            return;
+        }
+    };
 
-    // Initialize database pool
-    let pool = SqlitePoolOptions::new()
-        .connect(&config.database.database_url)
-        .await?;
+    // Database setup
+    let db_pool = match db::get_pool(&config.database.database_url).await {
+        Ok(pool) => {
+            println!("Connected to database successfully!");
+            pool
+        }
+        Err(e) => {
+            eprintln!("Failed to connect to database: {}", e);
+            return;
+        }
+    };
 
-    // Run database migrations
-    sqlx::migrate!("./migrations").run(&pool).await?;
+    // Run migrations
+    if let Err(e) = migrate!("./migrations").run(&db_pool).await {
+        eprintln!("Failed to run migrations: {}", e);
+        return;
+    }
 
-    // CORS Layer
+    let app_state = AppState {
+        db: db_pool.clone(),
+        config: config.clone(),
+    };
+
+    // CORS setup
     let cors = CorsLayer::new()
         .allow_origin(Any)
+        .allow_methods(Any)
         .allow_headers(Any);
 
-    // build our application with routes and state
     let app = Router::new()
-        .route("/", get(|| async { "Hello, world!" }))
-        .route("/register", post(handlers::register_user))
-        .route("/login", post(handlers::login_user))
-        .with_state(pool)
+        .route("/", get(root))
+        .route("/register", post(handlers::auth_handler::register_user))
+        .route("/login", post(handlers::auth_handler::login_user))
+        .with_state(app_state)
         .layer(cors);
 
-    // run it with hyper on configured address and port
     let addr = SocketAddr::from(([0, 0, 0, 0], config.server.port));
-    let listener = tokio::net::TcpListener::bind(addr).await?;
-    println!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await?;
-
-    Ok(())
+    println!("listening on {}", addr);
+    let listener = TcpListener::bind(&addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
